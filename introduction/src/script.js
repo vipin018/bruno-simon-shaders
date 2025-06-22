@@ -17,27 +17,58 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-
+// scene.background = new THREE.Color("#E8D6C2")
 /**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
-
+const texture = textureLoader.load("/textures/img.webp")
 /**
  * Test mesh
  */
 // Geometry
-const geometry = new THREE.PlaneGeometry(1, 1, 32,32)
+const geometry =  new THREE.PlaneGeometry(2,2, 128,128)
+geometry.scale(1.5, 1, 1);
+
+const count = geometry.attributes.position.count;
+console.log(count);
+
+const random = new Float32Array(count);
+
+for (let i = 0; i < count; i++) {
+    random[i] = Math.random();
+}
+geometry.setAttribute(
+    'aRandom',
+    new THREE.BufferAttribute(random, 1)
+);
+
+
 
 // Material
 const material = new THREE.RawShaderMaterial(
     {
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
-        wireframe: true,
-        doubleSided: true,
+        // wireframe: true, ,
+        side : THREE.DoubleSide,
+        uniforms:{
+            uFreq:{
+                value: new THREE.Vector2(3, 2)
+            },
+            uTime: {
+                value: 0
+            },
+            uTexture:{
+                value: texture
+            }
+        }
     }
 )
+
+    gui.add(material.uniforms.uFreq.value, "x").min(0).max(20).step(0.01).name("Frequency X")
+    gui.add(material.uniforms.uFreq.value, "y").min(0).max(20).step(0.01).name("Frequency Y")
+
 
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)
@@ -70,7 +101,7 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(0.25, - 0.25, 1)
+camera.position.set(0.25, - 0.25, 2)
 scene.add(camera)
 
 // Controls
@@ -99,6 +130,10 @@ const tick = () => {
 
     // Render
     renderer.render(scene, camera)
+
+    // Update material uniforms
+    material.uniforms.uTime.value = elapsedTime
+    
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
