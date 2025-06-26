@@ -15,7 +15,7 @@ const canvas = document.querySelector('#canvas')
 
 // Scene
 const scene = new THREE.Scene()
-// scene.background = new THREE.Color('#0a001f')
+scene.background = new THREE.Color('#0a001f')
 
 /**
  * Test mesh
@@ -74,9 +74,9 @@ const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 
 
 scene.add(camera)
 if (window.innerWidth < 768) {
-  camera.position.set(0, 0, 1.5);
+  camera.position.set(0, 0, 2.5);
 } else {
-  camera.position.set(0, 0, 1);
+  camera.position.set(0.25, -0.25, 1.5);
 }
 // Controls
 const controls = new OrbitControls(camera, canvas)

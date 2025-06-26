@@ -1,12 +1,19 @@
 precision mediump float;
 
-varying vec2 vUv;
 uniform float uTime;
+varying vec2 vUv;
 
+// Random
 float random(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+// Smooth interpolation
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// 2D noise
 float noise(vec2 st) {
     vec2 i = floor(st);
     vec2 f = fract(st);
@@ -16,51 +23,49 @@ float noise(vec2 st) {
     float c = random(i + vec2(0.0, 1.0));
     float d = random(i + vec2(1.0, 1.0));
 
-    vec2 u = f * f * (3.0 - 2.0 * f);
-
+    vec2 u = fade(f);
     return mix(a, b, u.x) +
            (c - a) * u.y * (1.0 - u.x) +
            (d - b) * u.x * u.y;
 }
 
-float sdTriangle(vec2 p) {
-    const float k = sqrt(3.0);
-    p.x = abs(p.x) - 0.5;
-    p.y += 0.3;
-    if (p.x + k * p.y > 0.0) p = (vec2(p.x - k * p.y, -k * p.x - p.y)) / 2.0;
-    p.x -= clamp(p.x, -1.0, 0.0);
-    return -length(p) * sign(p.y);
-}
-
-vec3 palette(float t) {
-    vec3 a = vec3(0.5, 0.2, 0.8);
-    vec3 b = vec3(0.5, 0.4, 0.3);
-    vec3 c = vec3(2.0, 1.0, 0.0);
-    vec3 d = vec3(0.50, 0.20, 0.25);
-    return a + b * cos(6.2831 * (c * t + d));
+// Fractal Brownian Motion
+float fbm(vec2 st) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int i = 0; i < 5; i++) {
+        value += amplitude * noise(st);
+        st *= 2.0;
+        amplitude *= 0.5;
+    }
+    return value;
 }
 
 void main() {
     vec2 uv = vUv * 2.0 - 1.0;
-    float t = uTime * 0.8;
 
-    // Swirl effect
-    float angle = atan(uv.y, uv.x) + sin(t + length(uv) * 10.0) * 0.6;
-    float radius = length(uv);
-    uv = vec2(cos(angle), sin(angle)) * radius;
+    // Time animation
+    vec2 motion1 = uv + vec2(uTime * 0.3, 0.0);
+    vec2 motion2 = uv * 1.5 + vec2(-uTime * 0.015, 0.1);
 
-    // Ripple distortion
-    uv.y += sin(uv.x * 8.0 + t * 2.5) * 0.08;
-    uv.x += cos(uv.y * 6.0 - t * 2.0) * 0.05;
+    // Two layers of clouds
+    float clouds1 = fbm(motion1 * 2.0);
+    float clouds2 = fbm(motion2 * 3.5);
 
-    float d = sdTriangle(uv);
-    float shape = smoothstep(1.5, -0.05, d);
-    float edgeGlow = smoothstep(0.03, 0.01, abs(d));
-    float pulse = 1.5 + 0.5 * sin(t * 3.0 + length(uv) * 8.0);
+    float clouds = mix(clouds1, clouds2, 0.5);
 
-    vec3 col = palette(radius + t * 0.1 + shape);
+    // Sun glow at center
+    float sun = smoothstep(0.4, 0.0, length(uv)) * 1.2;
+    vec3 sunColor = vec3(0.97, 0.73, 0.0);
 
-    vec3 finalColor = col * shape + vec3(1.0, 0.2, 1.0) * edgeGlow * pulse;
+    vec3 skyColor = vec3(0.18, 0.59, 0.99);     // sky blue
+    vec3 cloudColor = vec3(1.0);             // white clouds
 
-    gl_FragColor = vec4(finalColor, 1.0);
+    // Blend cloud into sky
+    vec3 base = mix(skyColor, cloudColor, smoothstep(0.4, 1.0, clouds));
+
+    // Add sun glow
+    base += sun * sunColor;
+
+    gl_FragColor = vec4(base, 1.0);
 }
