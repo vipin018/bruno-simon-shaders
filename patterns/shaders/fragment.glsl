@@ -45,7 +45,7 @@ void main() {
     vec2 uv = vUv * 2.0 - 1.0;
 
     // Time animation
-    vec2 motion1 = uv + vec2(uTime * 0.3, 0.0);
+    vec2 motion1 = uv + vec2(uTime * 0.03, 0.0);
     vec2 motion2 = uv * 1.5 + vec2(-uTime * 0.015, 0.1);
 
     // Two layers of clouds
@@ -56,9 +56,9 @@ void main() {
 
     // Sun glow at center
     float sun = smoothstep(0.4, 0.0, length(uv)) * 1.2;
-    vec3 sunColor = vec3(0.97, 0.73, 0.0);
+    vec3 sunColor = vec3(1.0, 0.8, 0.2);
 
-    vec3 skyColor = vec3(0.18, 0.59, 0.99);     // sky blue
+    vec3 skyColor = vec3(0.6, 0.8, 1.0);     // sky blue
     vec3 cloudColor = vec3(1.0);             // white clouds
 
     // Blend cloud into sky

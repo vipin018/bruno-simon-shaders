@@ -46,7 +46,7 @@ geometry.setAttribute(
 
 
 // Material
-const material = new THREE.RawShaderMaterial(
+const material = new THREE.ShaderMaterial(
     {
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
