@@ -14,7 +14,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 const gui = new GUI();
 gui.close();
 const debugObject = {};
-
+const textureLoader = new THREE.TextureLoader();
 // Canvas
 const canvas = document.querySelector('#canvas');
 
@@ -115,6 +115,52 @@ gui.add(material.uniforms.uColorMultiplier, 'value')
 const mesh = new THREE.Mesh(geometry, material);
 mesh.rotation.x = -Math.PI * 0.5;
 scene.add(mesh);
+
+// moon
+// Create moon geometry
+const moonGeometry = new THREE.SphereGeometry(1, 32, 32); 
+const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
+const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+
+// Position it where the point light is
+moon.position.set(0, 0, -8);
+scene.add(moon);
+moon.scale.set(2,2,2); // Scale it up for visibility
+
+textureLoader.load('/texture.webp', (texture) => {
+  moonMaterial.map = texture;
+  moonMaterial.needsUpdate = true; // Ensure the material updates with the new texture
+})
+
+
+// stars
+const starGeometry = new THREE.BufferGeometry();
+const starCount = 2000;
+const starPositions = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount * 3; i++) {
+  starPositions[i] = (Math.random() - 0.5) * 100;
+}
+starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+const starMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.5,
+  sizeAttenuation: true, // smaller when farther
+  transparent: true,
+  opacity: 0.8,
+  depthWrite: false, // avoid z-fighting
+  blending: THREE.AdditiveBlending,
+  
+});
+
+textureLoader.load('/star.webp', (starTex) => {
+  starMaterial.map = starTex;
+  starMaterial.needsUpdate = true;
+});
+
+const stars = new THREE.Points(starGeometry, starMaterial);
+scene.add(stars);
+
+
 
 /**
  * Sizes
@@ -222,6 +268,23 @@ const tick = () => {
   material.uniforms.uTime.value = elapsedTime;
   controls.update();
   renderer.render(scene, camera);
+
+  const tick = () => {
+    stats.begin();
+  
+    const elapsedTime = clock.getElapsedTime();
+    material.uniforms.uTime.value = elapsedTime;
+  
+    // Update controls + stars
+    controls.update();
+    stars.rotation.y += 0.001;
+  
+    renderer.render(scene, camera);
+    stats.end();
+  
+    requestAnimationFrame(tick);
+  };
+  
 
   stats.end();
   // console.log(`Camera position: ${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)}`);
