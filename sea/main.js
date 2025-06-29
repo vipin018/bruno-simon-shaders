@@ -12,6 +12,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
  */
 // Debug
 const gui = new GUI();
+gui.close();
 const debugObject = {};
 
 // Canvas
@@ -45,8 +46,8 @@ const material = new THREE.ShaderMaterial({
     uBigWaveElevation: { value: 0.03 }, // taller dunes
     uBigWaveSpeed: { value: 1.25 }, // very slow motion (almost static)
 
-    uSmallWaveElevation: { value: 0.25 }, 
-    uSmallWaveFrequency: { value: 1.5 }, 
+    uSmallWaveElevation: { value: 0.4 }, 
+    uSmallWaveFrequency: { value: 0.5 }, 
     uSmallWaveSpeed: { value: 0.4 }, 
     uSmallWaveIteration: { value: 3 },
     
@@ -160,8 +161,8 @@ controls.enableDamping = true;
 /**
  * Helpers + Stats
  */
-const axesHelper = new THREE.AxesHelper();
-scene.add(axesHelper);
+// const axesHelper = new THREE.AxesHelper();
+// scene.add(axesHelper);
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
