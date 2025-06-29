@@ -20,7 +20,7 @@ const canvas = document.querySelector('#canvas');
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#000013'); // warm desert haze
+// scene.background = new THREE.Color('#000013'); // warm desert haze
 
 
 /**
@@ -123,7 +123,7 @@ const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, emissive: 0x
 const moon = new THREE.Mesh(moonGeometry, moonMaterial);
 
 // Position it where the point light is
-moon.position.set(0, 0, -8);
+moon.position.set(0, 2, -15);
 scene.add(moon);
 moon.scale.set(2,2,2); // Scale it up for visibility
 
@@ -159,6 +159,37 @@ textureLoader.load('/star.webp', (starTex) => {
 
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
+
+// SKY GEOMETRY (big inverted sphere so camera inside)
+const skyGeo = new THREE.SphereGeometry(50, 32, 32);
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, // face inward
+  vertexShader: `
+    varying vec3 vWorldPosition;
+    void main() {
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vWorldPosition = worldPosition.xyz;
+      gl_Position = projectionMatrix * viewMatrix * worldPosition;
+    }
+  `,
+  fragmentShader: `
+    varying vec3 vWorldPosition;
+    void main() {
+      float height = normalize(vWorldPosition).y;
+      
+      // Gradient colors
+      vec3 topColor = vec3(0.0, 0.0, 0.05);  // space black
+      vec3 bottomColor = vec3(0.02, 0.05, 0.2);  // deep blue horizon
+      
+      vec3 color = mix(bottomColor, topColor, smoothstep(-0.2, 0.8, height));
+      
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `
+});
+
+const sky = new THREE.Mesh(skyGeo, skyMat);
+scene.add(sky);
 
 
 
